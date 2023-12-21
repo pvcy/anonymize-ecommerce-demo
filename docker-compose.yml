@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  users-api:
+    build:
+      context: users_api
+    environment:
+      DB_CONNSTRING:
+    ports:
+      - 8000:8000
+
