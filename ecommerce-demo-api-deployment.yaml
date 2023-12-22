@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-demo-api
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: ecommerce-demo-api
+  template:
+    metadata:
+      labels:
+        app: ecommerce-demo-api
+    spec:
+      containers:
+      - image: ghcr.io/pvcy/ecommerce-demo-api:0.0.1
+        name: ecommerce-demo-api
+        ports:
+        - containerPort: 8000
+        env:
+          - name: DB_CONNSTRING
+            valueFrom:
+              secretKeyRef:
+                name: db-connstring
+                key: db-connstring
+      imagePullSecrets:
+        - name: ghcr-login-secret
