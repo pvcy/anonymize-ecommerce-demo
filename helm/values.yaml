@@ -1,0 +1,9 @@
+deployment:
+  image:
+    repository: ghcr.io/pvcy/ecommerce-demo-api
+    tag: latest
+database: {}
+labels:
+  app: argo-cd-previews
+  environment: "dev"
+ingress: {}

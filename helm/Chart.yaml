@@ -1,0 +1,5 @@
+apiVersion: v2
+name: ecommerce-demo
+type: application
+description: Demo ecommerce application
+version: 0.0.1

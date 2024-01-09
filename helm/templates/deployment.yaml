@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ecommerce-demo-api
+  labels: {{ .Values.labels | toYaml | nindent 4 }}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -14,7 +15,7 @@ spec:
         app: ecommerce-demo-api
     spec:
       containers:
-      - image: ghcr.io/pvcy/ecommerce-demo-api:0.0.1
+      - image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         name: ecommerce-demo-api
         ports:
         - containerPort: 8000
