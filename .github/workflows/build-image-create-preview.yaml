@@ -66,7 +66,10 @@ jobs:
       run: |
         argocd app set ecommerce-demo-preview-${{github.event.number}} \
         --parameter database.url=${{ steps.create-branch.outputs.db_url }} \
-        --parameter deployment.image.tag=${{ github.event.pull_request.head.sha }}
+        --parameter deployment.image.tag=${{ github.event.pull_request.head.sha }} \
+        --parameter imageCredentials.email=${{ secrets.GHCR_EMAIL }} \
+        --parameter imageCredentials.username=${{ github.actor }} \
+        --parameter imageCredentials.password=${{ secrets.GHCR_TOKEN }}
 
     - name: Comment on Pull Request
       uses: thollander/actions-comment-pull-request@v2
