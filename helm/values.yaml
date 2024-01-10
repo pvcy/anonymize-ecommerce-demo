@@ -7,3 +7,8 @@ labels:
   app: argo-cd-previews
   environment: "dev"
 ingress: {}
+imageCredentials:
+  registry: ghcr.io
+  username: gh-user
+  password: token-with-access-to-registry
+  email: you@yourdomain.com
