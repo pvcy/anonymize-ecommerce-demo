@@ -8,23 +8,27 @@ on:
 
 jobs:
   build-push-container:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
 
     steps:
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Login to GHCR
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Build and Push
-      uses: docker/build-push-action@v5
-      with:
-        push: true
-        tags: ${{ github.repository_owner }}/ecommerce-demo:${{ github.event.pull_request.head.sha }}
+    - name: Build and push
+      env:
+        ORG_NAME: ${{ github.repository_owner }}
+        IMAGE_TAG: ${{ github.event.pull_request.head.sha }}
+      run: |
+        docker build -t ghcr.io/$ORG_NAME/ecommerce-demo-api:$IMAGE_TAG users_api/
+        docker push ghcr.io/$ORG_NAME/ecommerce-demo-api:$IMAGE_TAG
 
   create-preview-environment:
     runs-on: ubuntu-latest
