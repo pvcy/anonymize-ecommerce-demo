@@ -26,7 +26,7 @@ def hello():
 @app.route("/users", methods=['GET'])
 def get_users():
     page = request.args.get('page', default=1, type=int)
-    page_size = 100
+    page_size = 50
 
     offset = (page - 1) * page_size
 
