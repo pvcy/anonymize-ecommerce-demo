@@ -1,0 +1,75 @@
+name: Build image and create preview
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build-push-container:
+    runs-on: ubuntu-latest
+
+    steps:
+      uses: actions/checkout@v3
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: ${{ github.repository_owner }}/ecommerce-demo:${{ github.event.pull_request.head.sha }}
+
+  create-preview-environment:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    needs: build-push-container
+
+    steps:
+    # Create a new branch on Neon using the PR number in the branch name. This
+    # operation is idempotent, so it's effectively a no-op if more commits are
+    # push to the original PR
+    - name: Create Neon Branch and Compute for PR
+      id: create-branch
+      uses: neondatabase/create-branch-action@v4
+      with:
+        api_key: ${{ secrets.NEON_API_KEY }}
+        project_id: ${{ secrets.NEON_PROJECT_ID }}
+        branch_name: pr-${{ github.event.number }}
+        parent: anonymized
+
+    - name: Install the Argo CD CLI
+      run: |
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v2.8.4/argocd-linux-amd64
+        sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
+
+    - name: Login to Argo CD
+      run: argocd login ${{ secrets.ARGOCD_HOSTNAME }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
+
+    # Use parameter overrides to set the image tag and database URL:
+    # https://argo-cd.readthedocs.io/en/stable/user-guide/parameters/
+    - name: Update the Preview Environment with the Neon Branch URL
+      run: |
+        argocd app set ecommerce-demo-preview-${{github.event.number}} \
+        --parameter database.url=${{ steps.create-branch.outputs.db_url }} \
+        --parameter deployment.image.tag=${{ github.event.pull_request.head.sha }}
+
+    - name: Comment on Pull Request
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        message: |
+          :rocket: Preview URL: https://preview-pr-${{github.event.number}}.${{ secrets.PREVIEW_DOMAIN }}
+          :octopus: Argo CD URL: https://${{ secrets.ARGOCD_HOSTNAME }}/applications/argocd/ecommerce-demo-preview-${{github.event.number}}
+        # Comment tag allows the action to update an existing comment, if one
+        # exists. This prevents spamming the PR with identical comments
+        comment_tag: preview-url
