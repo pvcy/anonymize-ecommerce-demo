@@ -8,10 +8,12 @@ on:
 
 jobs:
   build-push-container:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
 
     steps:
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Login to GHCR
       uses: docker/login-action@v3
@@ -25,6 +27,7 @@ jobs:
       with:
         push: true
         tags: ${{ github.repository_owner }}/ecommerce-demo:${{ github.event.pull_request.head.sha }}
+        context: users_api
 
   create-preview-environment:
     runs-on: ubuntu-latest
