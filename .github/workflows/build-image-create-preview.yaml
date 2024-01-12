@@ -39,6 +39,8 @@ jobs:
     needs: build-push-container
 
     steps:
+    - uses: actions/checkout@v4
+
     # Create a new branch on Neon using the PR number in the branch name. This
     # operation is idempotent, so it's effectively a no-op if more commits are
     # push to the original PR
@@ -60,6 +62,10 @@ jobs:
     - name: Login to Argo CD
       run: argocd login ${{ secrets.ARGOCD_HOSTNAME }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
 
+    # Wait if necessary for ApplicationSet to create the app for this PR
+    - name: Wait for Argo CD app to deploy
+      run: ./argocd-app-wait.sh ecommerce-demo-preview-${{github.event.number}}
+
     # Use parameter overrides to set the image tag and database URL:
     # https://argo-cd.readthedocs.io/en/stable/user-guide/parameters/
     - name: Update the Preview Environment with the Neon Branch URL
@@ -71,6 +77,11 @@ jobs:
         --parameter imageCredentials.username=${{ github.actor }} \
         --parameter imageCredentials.password=${{ secrets.GHCR_TOKEN }}
 
+
+    - name: Verify preview deployment
+      run: |
+        ./http-wait.sh https://preview-pr-${{github.event.number}}.${{ secrets.PREVIEW_DOMAIN }}
+
     - name: Comment on Pull Request
       uses: thollander/actions-comment-pull-request@v2
       with:
@@ -80,3 +91,14 @@ jobs:
         # Comment tag allows the action to update an existing comment, if one
         # exists. This prevents spamming the PR with identical comments
         comment_tag: preview-url
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Run tests
+      env:
+        DB_CONNSTRING: ${{ steps.create-branch.outputs.db_url }}
+      run: |
+        pip install -r users_api/src/requirements.txt -r users_api/tests/requirements_test.txt
+        pytest
