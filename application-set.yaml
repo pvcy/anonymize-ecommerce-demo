@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ecommerce-demo-previews
+  namespace: argocd
+spec:
+  generators:
+  - pullRequest:
+      requeueAfterSeconds: 90
+      github:
+        owner: YOUR_ORG
+        repo: YOUR_FORK
+  ignoreApplicationDifferences: #Ignore differences in the overridden helm parameters
+  - jqPathExpressions:
+    - .spec.source.helm.parameters
+  template:
+    metadata:
+      name: 'ecommerce-demo-preview-{{number}}'
+    spec:
+      source:
+        repoURL: 'https://github.com/YOUR_ORG/YOUR_FORK'
+        path: helm/
+        targetRevision: main
+        helm:
+          valueFiles:
+          - values.yaml
+          values: |
+            ingress:
+              domain: preview-pr-{{number}}.YOUR_DOMAIN
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'preview-pr-{{number}}'

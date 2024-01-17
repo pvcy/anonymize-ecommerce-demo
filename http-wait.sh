@@ -1,7 +1,7 @@
 #!/bin/sh
 # Wait for a success HTTP response or timeout
 url=$1
-limit=10
+limit=20
 i=1
 while [ $i -le $limit ]; do
   curl --fail $url

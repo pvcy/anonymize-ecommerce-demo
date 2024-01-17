@@ -60,7 +60,7 @@ jobs:
         rm argocd-linux-amd64
 
     - name: Login to Argo CD
-      run: argocd login ${{ secrets.ARGOCD_HOSTNAME }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
+      run: argocd --grpc-web login ${{ secrets.ARGOCD_HOSTNAME }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
 
     # Wait if necessary for ApplicationSet to create the app for this PR
     - name: Wait for Argo CD app to deploy
@@ -70,7 +70,7 @@ jobs:
     # https://argo-cd.readthedocs.io/en/stable/user-guide/parameters/
     - name: Update the Preview Environment with the Neon Branch URL
       run: |
-        argocd app set ecommerce-demo-preview-${{github.event.number}} \
+        argocd --grpc-web app set ecommerce-demo-preview-${{github.event.number}} \
         --parameter database.url=${{ steps.create-branch.outputs.db_url }} \
         --parameter deployment.image.tag=${{ github.event.pull_request.head.sha }} \
         --parameter imageCredentials.email=${{ secrets.GHCR_EMAIL }} \

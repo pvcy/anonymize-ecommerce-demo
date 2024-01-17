@@ -1,7 +1,7 @@
 #!/bin/sh
 # Wait for an argocd app to exist
 app_name=$1
-limit=10
+limit=20
 i=1
 while [ $i -le $limit ]; do
   argocd --grpc-web app list | grep -q $app_name
