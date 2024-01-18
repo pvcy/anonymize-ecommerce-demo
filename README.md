@@ -6,7 +6,7 @@ To use this you will need:
 
 - A fork of this repo
 - A subdomain with a wildcard DNS
-- An ArgoCD server with a public ingress (so GitHub Actions can access it)
+- An ArgoCD server with a public ingress (so GitHub Actions can access it) - [Getting Started guide](https://argo-cd.readthedocs.io/en/stable/getting_started/)
   - Create an ApplicationSet in your Argo CD instance using the example included here (`application-set.yaml`)
   - Use an ingress controller and wildcard certificates so that `*.your-domain.com` resolves to your Argo CD based previews
 - A [Neon](https://neon.tech/) account (a free trial is available)
