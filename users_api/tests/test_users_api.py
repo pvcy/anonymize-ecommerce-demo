@@ -15,7 +15,7 @@ def test_get_users(mock_get_sql_dict):
     expected_data = [{'id': 1, 'name': 'John'}, {'id': 2, 'name': 'Jane'}]
     assert response.json == expected_data
 
-    mock_get_sql_dict.assert_called_once_with("SELECT * FROM users ORDER BY id LIMIT 100 OFFSET 0")
+    mock_get_sql_dict.assert_called_once_with("SELECT * FROM users ORDER BY id LIMIT 50 OFFSET 0")
 
 @patch('users_api.src.users_api.get_sql_dict')
 def test_get_users_pagination(mock_get_sql_dict):
@@ -27,7 +27,7 @@ def test_get_users_pagination(mock_get_sql_dict):
 
     assert response.status_code == 200
 
-    mock_get_sql_dict.assert_called_once_with("SELECT * FROM users ORDER BY id LIMIT 100 OFFSET 200")
+    mock_get_sql_dict.assert_called_once_with("SELECT * FROM users ORDER BY id LIMIT 50 OFFSET 100")
 
 
 @pytest.mark.integration
