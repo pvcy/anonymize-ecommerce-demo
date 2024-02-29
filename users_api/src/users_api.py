@@ -21,7 +21,7 @@ def get_sql_dict(q):
 
 @app.route("/")
 def hello():
-    return "Hello, World!\n"
+    return "Hello, Friends!\n"
 
 @app.route("/users", methods=['GET'])
 def get_users():
